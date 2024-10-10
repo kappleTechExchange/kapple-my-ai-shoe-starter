@@ -85,7 +85,7 @@ After a successful deployment, we can modify the `./github/workflows/cloud-run.y
 file. Additional information on each step is in the [documentation](https://github.com/google-github-actions/auth?tab=readme-ov-file#workload-identity-federation-through-a-service-account)
  but you should be able to follow the steps below.
 
-1. Create a Workload Identity Pool and a Provider for GitHub.
+1. Create a Workload Identity Pool and a Provider for GitHub. Replace `GITHUB_ORG` with the name of the GitHub org for your class. This should be before your repository name in the URL for your GitHub repository.
 
 ```shell
 gcloud iam workload-identity-pools create "github" \
@@ -99,7 +99,7 @@ gcloud iam workload-identity-pools providers create-oidc "project-repo" \
     --workload-identity-pool="github" \
     --display-name="My GitHub repo Provider" \
     --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
-    --attribute-condition="assertion.repository_owner == 'Google-SDS'" \
+    --attribute-condition="assertion.repository_owner == 'GITHUB_ORG'" \
     --issuer-uri="https://token.actions.githubusercontent.com"
 ```
 
@@ -117,7 +117,7 @@ gcloud iam workload-identity-pools providers describe "project-repo" \
 
 4. Authorize your service account. Use the output from the first command as the
 `WORKLOAD_IDENTITY_POOL_ID` in the second command, and your team's GitHub repo
-name as the `GITHUB_REPO_NAME`. 
+name as the `GITHUB_REPO_NAME`. Also replace `GITHUB_ORG` with the name of the GitHub org, same as in step 1.
 
 ```shell
 gcloud iam workload-identity-pools describe "github" \
@@ -130,7 +130,7 @@ gcloud iam workload-identity-pools describe "github" \
 gcloud iam service-accounts add-iam-policy-binding "PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
   --project="PROJECT_ID" \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/WORKLOAD_IDENTITY_POOL_ID/attribute.repository/Google-SDS/GITHUB_REPO_NAME"
+  --member="principalSet://iam.googleapis.com/WORKLOAD_IDENTITY_POOL_ID/attribute.repository/GITHUB_ORG/GITHUB_REPO_NAME"
 ```
 
 4. In IAM in the Cloud Console, double check that the following roles are attached 
