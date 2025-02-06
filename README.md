@@ -129,7 +129,7 @@ gcloud iam workload-identity-pools providers describe "${OIDC_NAME}" \
 ```
 
 4. Authorize your service account. Use the output from the first command as the
-`WORKLOAD_IDENTITY_POOL_ID` in the second command, your team's GitHub name as the `TEAM_NAME`, and your team's GitHub repo
+`WORKLOAD_IDENTITY_POOL_ID` in the second command and your team's GitHub repo
 name as the `GITHUB_REPO_NAME`. Also replace `GITHUB_ORG` with the name of the GitHub organization for your course.
 
 ```shell
