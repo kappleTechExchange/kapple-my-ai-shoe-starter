@@ -143,7 +143,6 @@ gcloud iam workload-identity-pools describe "github" \
 WORKLOAD_IDENTITY_POOL_ID=paste-output-from-prev-command
 PROJECT_NUMBER=yourcloudprojectnumber
 GITHUB_ORG=your-course-github-org
-TEAM_NAME=your-github-team-name
 GITHUB_REPO_NAME=your-github-team-repo-name
 ```
 
@@ -151,7 +150,7 @@ GITHUB_REPO_NAME=your-github-team-repo-name
 gcloud iam service-accounts add-iam-policy-binding "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --project="${PROJECT_ID}" \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/${WORKLOAD_IDENTITY_POOL_ID}/attribute.repository/${GITHUB_ORG}/${TEAM_NAME}/${GITHUB_REPO_NAME}"
+  --member="principalSet://iam.googleapis.com/${WORKLOAD_IDENTITY_POOL_ID}/attribute.repository/${GITHUB_ORG}/${GITHUB_REPO_NAME}"
 ```
 
 5. In IAM in the Cloud Console, double check that the following roles are attached 
