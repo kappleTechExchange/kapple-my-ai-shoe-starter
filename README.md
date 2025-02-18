@@ -4,34 +4,48 @@
 
 TODO: Replace with your team members
 
-## How to run the streamlit app
+# Setup
 
-### Running the Streamlit app for development
+One person needs to follow SETUP.md to complete setup. Ignore this if it is already done for you!
 
-Make sure you have installed the correct packages.
+# How to Run the Streamlit App
 
-```shell
-$ pip install -r requirements.txt
-```
+## Step 1: Clone the repository.
 
-Change into this directory. You can check that you're in the correct directory by running `ls`. 
-You should see the correct files printed out.
+In GitHub, go to your team's repository. Click on "Code" then on "SSH" and copy the output.
 
-```shell
-$ ls
-app.py             data_fetcher.py       internals.py  modules_test.py  requirements.txt
-custom_components  data_fetcher_test.py  modules.py    README.md        run-streamlit.sh
-```
+Open Cloud Shell by going to https://shell.cloud.google.com. **Make sure you are in the correct Google account!**
 
-Run the following command to run the app locally. Note that if you make changes, you just
-need to refresh the server and the new changes should appear (you do not need to rerun
-the following command while you are actively making changes).
+In the terminal, type `git clone` and then paste what you copied from GitHub. You should see something like this, with your GitHub org and repository name:
 
 ```shell
-$ streamlit run app.py
+git clone git@github.com:Github-Org-Name/my-team-repository.git
 ```
 
-### Using Docker to run the Streamlit app
+Hit enter, and then use `cd` to change into your team's repository.
+
+```shell
+cd my-team-repository
+```
+
+## Step 2: Run the Streamlit app.
+
+Run this command in the terminal to install the needed packages.
+
+```shell
+pip install -r requirements.txt
+```
+
+Run the following command to run the app locally. Follow the URL that is outputted, or in the Cloud Shell Editor, go to the upper right corner and hover over the icons until you find "Web Preview". Then click on "Preview on port 8080." You should see the app!
+
+```shell
+streamlit run app.py
+```
+
+**Note:** When you make changes, you just
+need to refresh the webpage and the new changes should appear (*you do NOT need to rerun the previous command while you are actively making changes*).
+
+## Step 3: Using Docker to run the Streamlit app
 
 Docker simply creates a virtual environment for only your app. This is what we will use to
 deploy our app continuously.
@@ -40,125 +54,30 @@ Fortunately, we already have a script that builds and starts Docker for us. Run 
 following command to build the container and start the server locally.
 
 ```shell
-$ ./run-streamlit.sh
+./run-streamlit.sh
 ```
+**Note:** This also outputs the same local URL that the previous command output. The only difference is that instead of running the webapp on *your* Cloud Shell, it is running it *within a Docker container*. Don't worry too much about understanding this now, but **if this command fails, your automatic deployment through GitHub Actions will also fail**.
 
-## Setting up GitHub Actions for CI/CD
+## Step 4: Manual deployment.
 
-The GitHub Actions are already mostly configured for you. They are split
-into two files:
+First, make sure someone in your team has gone through the steps in SETUP.md. Make sure you have ***Owners*** permission on the GCP project in IAM.
 
-* `.github/workflows/cloud-run.yml`: workflow for automatic deployment
-* `.github/workflows/python-checks.yml`: workflow for continuous integration (testing)
-
-You won't need to modify `python-checks` at all, but you will need to change
-the environment variables in `cloud-run.yml` to work for your team's GCP project.
-
-### Deploy manually on the command-line
-
-First, deploy your project manually from the command line.
-
-1. Set up your Google Cloud Project by following the "Before you begin" section of 
-http://cloud/run/docs/quickstarts/build-and-deploy/deploy-python-service?hl=en. **Each student can do this with their own Cloud project to start.**
-
-2. Build the image using the following commands, replacing the project ID and service 
-name with your info. Your service name is the name of your webapp or project and can 
-be whatever you want!
+Run the following command to deploy your webapp.
 
 ```shell
-PROJECT_ID=your-cloud-project-name
-SERVICE_NAME=your-team-service-name
-gcloud builds submit --tag gcr.io/${PROJECT_ID}/${SERVICE_NAME}
+./manual-deploy.sh
 ```
 
-3. Deploy the image that you just built by copying the following command. If successful, you should see a URL in the
-output on the command-line. Follow the link and you should see your app!
+# Making Code Changes
 
-```shell
-gcloud run deploy ${SERVICE_NAME} \
-    --image gcr.io/${PROJECT_ID}/${SERVICE_NAME}:latest \
-    --region us-central1 \
-    --allow-unauthenticated
-```
+After you are assigned a task in the project, how do you actually make the changes and test them out? Follow these steps:
 
-### Set up automatic deployment in GitHub Actions
-
-After a successful deployment, we can modify the `./github/workflows/cloud-run.yml`
-file. Additional information on each step is in the [documentation](https://github.com/google-github-actions/auth?tab=readme-ov-file#workload-identity-federation-through-a-service-account)
- but you should be able to follow the steps below. **These steps should be done as a team, but only ONE person needs to run the commands.**
-
-1. Decide on ONE team member's Cloud Project to use for the team project. That team member needs to go to **IAM & Admin** for their Cloud Project, click on **Grant Access** and add each team member's techexchange email as a "New Principle". For "Role", under **Basic** there should be **Editor**. Once every team member is an Editor for the project, every team member should be able to see the Cloud Project in the dropdown menu on the Google Cloud Console.
-
-2. Create a Workload Identity Pool and a Provider for GitHub. Replace `your-common-cloud-project-name` with the team's Cloud Project name, `your-team-service-name` with a name for your team webapp, and `your-course-github-org` with the name of the GitHub organization for your class. You do NOT need to change `OIDC_NAME=project-repo`. Then run the following commands (once you run the first commands setting the PROJECT_ID and other bash variables, you can copy and paste the next commands).
-
-```shell
-PROJECT_ID=your-common-cloud-project-name
-SERVICE_NAME=your-team-service-name
-OIDC_NAME=project-repo
-GITHUB_ORG=your-course-github-org
-```
-
-```shell
-gcloud iam workload-identity-pools create "github" \
-    --project="${PROJECT_ID}" \
-    --location="global" \
-    --display-name="GitHub Actions Pool"
-```
-
-```shell
-gcloud iam workload-identity-pools providers create-oidc "${OIDC_NAME}" \
-    --project="${PROJECT_ID}" \
-    --location="global" \
-    --workload-identity-pool="github" \
-    --display-name="My GitHub repo Provider" \
-    --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
-    --attribute-condition="assertion.repository_owner == '${GITHUB_ORG}'" \
-    --issuer-uri="https://token.actions.githubusercontent.com"
-```
-
-3. Get the full path name for the Workload Identity Provider from gcloud.
-You will use the output from this command as the `WORKLOAD_IDENTITY_PROVIDER` 
-field in `.github/workflows/cloud-run.yml`. You've already set the `OIDC_NAME` and the `PROJECT_ID` as bash variables so you can copy and paste this command.
-
-```shell
-gcloud iam workload-identity-pools providers describe "${OIDC_NAME}" \
-    --project="${PROJECT_ID}" \
-    --location="global" \
-    --workload-identity-pool="github" \
-    --format="value(name)"
-```
-
-4. Authorize your service account. Use the output from the first command as the
-`WORKLOAD_IDENTITY_POOL_ID` in the second command and your team's GitHub repo
-name as the `GITHUB_REPO_NAME`. Also replace `GITHUB_ORG` with the name of the GitHub organization for your course.
-
-```shell
-gcloud iam workload-identity-pools describe "github" \
-  --project="${PROJECT_ID}" \
-  --location="global" \
-  --format="value(name)"
-```
-
-```shell
-WORKLOAD_IDENTITY_POOL_ID=paste-output-from-prev-command
-PROJECT_NUMBER=yourcloudprojectnumber
-GITHUB_ORG=your-course-github-org
-GITHUB_REPO_NAME=your-github-team-repo-name
-```
-
-```shell
-gcloud iam service-accounts add-iam-policy-binding "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-  --project="${PROJECT_ID}" \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/${WORKLOAD_IDENTITY_POOL_ID}/attribute.repository/${GITHUB_ORG}/${GITHUB_REPO_NAME}"
-```
-
-5. In IAM in the Cloud Console, double check that the following roles are attached 
-to the service account, which is the `PROJECT_NUMBER-compute@developer.gserviceaccount.com` from the previous command.
-
-    - Cloud Build Service Account
-
-6. Update the environmental variables (all of the TODOs) in 
-`.github/workflows/cloud-run.yml`, commit and push your changes, 
-and click on "Actions" in your team's repository on GitHub to see
-the workflow running!
+1. Change into your team's repository in Cloud Shell using `cd`.
+2. Run `git pull --rebase` to pull in any of your teammates changes.
+3. Make changes to the code in Cloud Shell Editor.
+4. Run `streamlit run app.py` to see the changes in action (Step 2 above). Don't use CTRL-C and let this command continuously run.
+5. Continue to make changes and refresh the web page with the app to see the new changes.
+6. When you are ready to be done, use CTRL-C to stop the `streamlit run` command.
+7. Check that your changes work in a container by running `./run-streamlit.sh` and make sure you see your changes.
+8. Use git to add, commit, and push your changes. It might be good to run `git pull --rebase` before pushing your changes, or optionally use git branches to avoid conflicts with your teammates.
+9. In GitHub, once you push to the main branch, check that the Actions succeeded and deployed your changes.

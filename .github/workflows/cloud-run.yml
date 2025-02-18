@@ -10,11 +10,12 @@ on:
     types: [published]
 
 env:
-  PROJECT_ID: '' # TODO: update to your Google Cloud project ID
-  SERVICE_NAME: '' # TODO: update to your service name (name of your team's webapp!)
-  SERVICE_REGION: 'us-central1'
-  SERVICE_ACCOUNT: '' # TODO: update to your Cloud service account
-  WORKLOAD_IDENTITY_PROVIDER: '' #TODO: update to your workload identity provider
+  # TODO: Paste output from setup.sh below.
+  PROJECT_ID: ''
+  SERVICE_NAME: ''
+  SERVICE_REGION: ''
+  SERVICE_ACCOUNT: ''
+  WORKLOAD_IDENTITY_PROVIDER: ''
 
 jobs:
   py-checks:
