@@ -4,6 +4,13 @@ SERVICE_NAME=
 ### VARIABLES TO CHANGE - END
 
 # ----------- Manual Deployment ------------ #
+gcloud config set project ${PROJECT_ID}
+
+if [ $? != 0 ]; then
+    echo "'gcloud config set project' failed!"
+    exit 1
+fi
+
 gcloud builds submit --tag gcr.io/${PROJECT_ID}/${SERVICE_NAME}
 
 if [ $? != 0 ]; then
