@@ -2,7 +2,7 @@
 
 ## Our Team
 
-TODO: Replace with your team members
+TODO: Replace with your team members name
 
 # Setup
 
